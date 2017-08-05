@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AdAutoBannerView.iml" filepath="$PROJECT_DIR$/AdAutoBannerView.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ADAutoBannerView.iml" filepath="$PROJECT_DIR$/ADAutoBannerView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
