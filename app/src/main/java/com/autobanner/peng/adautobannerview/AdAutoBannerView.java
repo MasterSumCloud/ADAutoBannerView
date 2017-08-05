@@ -7,11 +7,14 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import java.util.Timer;
 
 /**
  * Created on 2017/8/4 16:26
@@ -26,8 +29,15 @@ public class AdAutoBannerView extends RelativeLayout {
     private int mBottomMargin = 10;
     private int mLeftMargin = 20;
     private int pointWith = 24;
+    private int delayTiem = 3000;
+    private int currentItemPosition = 0;
+    private int lastCurrentItemPositon = 0;
     private LinearLayout mLinearLayout;
     private ViewPager mViewPager;
+    private Handler mMHandler;
+    private Runnable mTimeRun;
+    private int mAdapterCount;
+    private Timer mTimer;
 
 
     public AdAutoBannerView(Context context) {
@@ -57,7 +67,64 @@ public class AdAutoBannerView extends RelativeLayout {
 
 
     private void init() {
+        mMHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                currentItemPosition++;
+                mViewPager.setCurrentItem(currentItemPosition);
+                //                setOtherPointFalse();
+                mMHandler.postDelayed(mTimeRun, delayTiem);
+                super.handleMessage(msg);
+            }
+        };
         prepareViewpager();
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                currentItemPosition = position;
+                setOtherPointFalse();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+
+        mTimeRun = new Runnable() {
+            @Override
+            public void run() {
+                mMHandler.sendEmptyMessage(0);
+            }
+        };
+        mViewPager.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        mMHandler.removeCallbacks(mTimeRun);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        mMHandler.postDelayed(mTimeRun, delayTiem);
+                        break;
+                }
+                return false;
+            }
+        });
+    }
+
+
+    public void setOtherPointFalse() {
+        for (int i = 0; i < mAdapterCount; i++) {
+            if (i != currentItemPosition % mAdapterCount) {
+                mLinearLayout.getChildAt(i).setEnabled(false);
+            } else {
+                mLinearLayout.getChildAt(i).setEnabled(true);
+            }
+        }
     }
 
     /**
@@ -94,18 +161,21 @@ public class AdAutoBannerView extends RelativeLayout {
             mLinearLayout.addView(point);
         }
         setMargins(mLinearLayout, 0, 0, 0, mBottomMargin);
-        this.removeAllViews();
         this.addView(mLinearLayout);
     }
 
     /**
      * 设置数据
      */
-    public <T extends PagerAdapter> void setData(T adapter) {
+    public <T extends PagerAdapter> void setData(final T adapter, int size) {
         mViewPager.setAdapter(adapter);
-        prepareLlPoint(adapter.getCount());
+        mViewPager.setCurrentItem(mAdapterCount / 2);
+        mAdapterCount = size;
+        prepareLlPoint(mAdapterCount);
         adapter.notifyDataSetChanged();
+        mMHandler.postDelayed(mTimeRun, delayTiem);
     }
+
 
     private static void setMargins(View v, int l, int t, int r, int b) {
         if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
@@ -128,13 +198,10 @@ public class AdAutoBannerView extends RelativeLayout {
 
     public void setLayoutPointMargin(int newPointMargin) {
         this.mLeftMargin = newPointMargin;
-
     }
 
-    private Handler mHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-        }
-    };
+
+    public void cacelTheTiemr() {
+        mMHandler.removeCallbacks(mTimeRun);
+    }
 }

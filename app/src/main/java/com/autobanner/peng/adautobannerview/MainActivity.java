@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         viewById.setData(new PagerAdapter() {
             @Override
             public int getCount() {
-                return strings.size();
+                return Integer.MAX_VALUE;
             }
 
             @Override
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             public Object instantiateItem(ViewGroup container, int position) {
                 ImageView imageView = new ImageView(MainActivity.this);
                 container.addView(imageView);
-                imageView.setBackgroundColor(Color.parseColor(strings.get(position)));
+                imageView.setBackgroundColor(Color.parseColor(strings.get(position % strings.size())));
                 return imageView;
             }
 
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             public void destroyItem(ViewGroup container, int position, Object object) {
                 container.removeView((View) object);
             }
-        });
+        }, strings.size());
 
     }
 
